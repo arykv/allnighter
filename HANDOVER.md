@@ -263,6 +263,17 @@ opening paragraph and a last-stretch list.
 `vercel.json`'s SPA catch-all is scoped `/((?!api/).*)` so it cannot swallow the
 function.
 
+**The handler must be a named `export async function POST`, never a default
+export.** Vercel's Node runtime reads `export default` as the old
+`(req, res) => void` signature and *ignores the value it returns*. A
+web-standard `(Request) => Response` handler exported as default does not throw
+— it runs, builds a correct Response, returns it into the void, and the request
+hangs until it is killed at `maxDuration`. It surfaces as
+`FUNCTION_INVOCATION_TIMEOUT`, which sends you hunting for a slow upstream that
+is not slow. The only place this is visible is the runtime log line
+*"WARN: default export returned a `Response`"* — `vercel inspect` will not show
+it.
+
 **The function cannot import from `src/`.** Vercel transpiles `api/plan.ts` to
 `api/plan.js` and emits *nothing it imports from outside `api/`* — so
 `import ... from '../src/data/papers'` typechecks, builds locally, passes every

@@ -130,9 +130,21 @@ const json = (body: unknown, status: number) =>
     },
   })
 
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== 'POST') return json({ error: 'POST only' }, 405)
-
+/**
+ * A NAMED METHOD EXPORT, not a default one — this is load-bearing.
+ *
+ * Vercel's Node runtime reads `export default` as the classic
+ * `(req, res) => void` signature and *ignores whatever it returns*. Exporting a
+ * web-standard `(Request) => Response` handler as the default therefore does not
+ * error: the function runs, builds a perfectly good Response, returns it into
+ * the void, and the request hangs until it is killed at `maxDuration`. It
+ * presents as `FUNCTION_INVOCATION_TIMEOUT`, which sends you hunting for a slow
+ * upstream that isn't slow.
+ *
+ * `export async function POST` is the fix, and it also means the runtime handles
+ * method routing — a GET gets a 405 without any code here.
+ */
+export async function POST(request: Request): Promise<Response> {
   const key = process.env.GEMINI_API_KEY
   // Not configured is not an error the student should ever see — the plan is
   // complete without this.
