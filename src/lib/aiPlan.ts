@@ -24,28 +24,45 @@ export interface AiPlan {
   beforeYouGoIn: string[]
 }
 
-/** One entry per unit, with the minutes summed across split blocks. */
-function unitMinutes(plan: Plan) {
-  const totals = new Map<number, number>()
+/**
+ * One entry per unit, with minutes summed across split blocks and then thrown
+ * away in favour of a single letter.
+ *
+ * **The bucketing is a cost decision, not a simplification.** The prompt only
+ * ever asked whether a block was short, moderate or long relative to the size
+ * of the unit — it never used the raw number. Sending minutes would make almost
+ * every request URL unique, so the CDN could never serve two students the same
+ * answer, and the key is paid. Three letters collapse that to a handful of URLs
+ * per paper.
+ */
+function unitSizes(plan: Plan) {
+  const totals = new Map<number, { minutes: number; marks: number }>()
   for (const b of plan.blocks) {
-    totals.set(b.unit.n, (totals.get(b.unit.n) ?? 0) + b.minutes)
+    const seen = totals.get(b.unit.n)
+    totals.set(b.unit.n, {
+      minutes: (seen?.minutes ?? 0) + b.minutes,
+      marks: b.unit.marks,
+    })
   }
-  return [...totals].map(([n, minutes]) => ({ n, minutes }))
+  return [...totals].map(([n, { minutes, marks }]) => {
+    // Same thresholds the server used to apply to raw minutes.
+    const share = minutes / (marks * 12)
+    const size = share < 0.35 ? 's' : share < 0.8 ? 'm' : 'l'
+    return `${n}:${size}`
+  })
 }
 
 export async function fetchAiPlan(plan: Plan, signal: AbortSignal): Promise<AiPlan | null> {
-  const blocks = unitMinutes(plan)
-  if (!blocks.length) return null
+  const units = unitSizes(plan)
+  if (!units.length) return null
 
-  const res = await fetch('/api/plan', {
-    method: 'POST',
-    signal,
-    headers: { 'content-type': 'application/json' },
-    // Deliberately the smallest payload that identifies the work: a paper slug,
-    // a preparation level, and unit numbers. No free text, which is what stops
-    // the endpoint being usable as a general-purpose model relay.
-    body: JSON.stringify({ paper: plan.paper.slug, prep: plan.prep, blocks }),
-  })
+  // A GET, so the answer can actually be cached at the edge — as a POST the
+  // cache header on the response did nothing and every plan cost a paid call.
+  // The query carries a paper slug, a preparation level and unit numbers: no
+  // free text, which is what stops this being usable as a model relay, and
+  // nothing that identifies the person asking.
+  const qs = new URLSearchParams({ p: plan.paper.slug, prep: plan.prep, u: units.join(',') })
+  const res = await fetch(`/api/plan?${qs}`, { signal })
 
   if (!res.ok) return null
   return (await res.json()) as AiPlan

@@ -53,7 +53,7 @@ export default function Privacy() {
           title="What leaves your device"
           body={[
             'Page views. The site counts which pages get opened, using Vercel Analytics. It sets no cookies and builds no profile of you — it records that a page was opened, roughly where in the world from, and on what kind of device. It cannot follow you to other websites.',
-            'The planner’s AI step. When a plan is generated, the site sends the subject you picked, how prepared you said you were, and the list of units with the minutes each one got, to Google’s Gemini API, which writes the “in this block” instructions. That request contains no name, no email, no device identifier and nothing that could be traced back to you — it is a subject and a list of chapters. Every number on that page is worked out by the site, never by the model.',
+            'The planner’s AI step. When a plan is generated, the site asks Google’s Gemini API to write the “in this block” instructions, and to do that it sends three things: the subject you picked, how prepared you said you were, and the list of units with a rough size for each — short, moderate or long. Not the minutes, not your exam time, not anything else. That request carries no name, no email and no device identifier, and there is nothing in it that could be traced back to you. Every number on that page is worked out by the site, never by the model.',
             'Nothing else. The calculators, the percentage tools and the plan itself all run in your browser.',
           ]}
         />

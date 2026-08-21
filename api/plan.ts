@@ -37,6 +37,22 @@ import { PAPERS, paperBySlug } from './_papers.js'
  *
  * Every failure path returns a status the client treats as "carry on without
  * me". The plan is complete and useful with no AI at all; this only ever adds.
+ *
+ * ## Cost — the key is paid, so every uncached call is money
+ *
+ * This is a public endpoint with no account behind it, so the defences against
+ * running up a bill are structural rather than authenticated:
+ *
+ * 1. **It is a GET, and that is the whole point.** It began as a POST carrying a
+ *    `s-maxage` header, which did nothing at all — CDNs do not cache POST, so
+ *    every single plan ever generated was a paid Gemini call. As a cacheable GET
+ *    the same request costs one call per day globally instead of one per student.
+ * 2. **The query is deliberately low-cardinality.** The block length is sent as
+ *    one of three letters, never as raw minutes, because the prompt only ever
+ *    needed "short/moderate/long". Minutes would have made almost every URL
+ *    unique and defeated the cache completely.
+ * 3. **A per-IP burst limit** catches the cache-miss flood a determined caller
+ *    could still generate by walking valid combinations.
  */
 
 const PREPS = ['nothing', 'some', 'most'] as const
@@ -112,10 +128,34 @@ SHAPE
 - blocks: for each unit number given, three to five imperative steps, in the order they should be done.
 - beforeYouGoIn: two or three things to do in the last stretch before the paper. Practical only.`
 
-interface Body {
-  paper?: unknown
-  prep?: unknown
-  blocks?: unknown
+const SIZES = { s: 'a short block', m: 'a moderate block', l: 'a long block' } as const
+type SizeKey = keyof typeof SIZES
+
+/**
+ * A per-IP burst limit, held in module scope.
+ *
+ * Serverless instances are ephemeral and there are several of them, so this is
+ * emphatically not a global quota — it cannot be, without the database this
+ * project deliberately does not have. What it does do is stop one caller in a
+ * loop from turning a warm instance into a billing incident, which is the
+ * realistic threat for a page like this. The cache above handles honest load.
+ */
+const HITS = new Map<string, { n: number; resetAt: number }>()
+const WINDOW_MS = 60_000
+const MAX_PER_WINDOW = 15
+
+function overLimit(ip: string, now: number): boolean {
+  const seen = HITS.get(ip)
+  if (!seen || now > seen.resetAt) {
+    HITS.set(ip, { n: 1, resetAt: now + WINDOW_MS })
+    // Cheap sweep so a long-lived instance cannot grow this map without bound.
+    if (HITS.size > 5_000) {
+      for (const [k, v] of HITS) if (now > v.resetAt) HITS.delete(k)
+    }
+    return false
+  }
+  seen.n += 1
+  return seen.n > MAX_PER_WINDOW
 }
 
 const json = (body: unknown, status: number) =>
@@ -144,41 +184,40 @@ const json = (body: unknown, status: number) =>
  * `export async function POST` is the fix, and it also means the runtime handles
  * method routing — a GET gets a 405 without any code here.
  */
-export async function POST(request: Request): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const key = process.env.GEMINI_API_KEY
   // Not configured is not an error the student should ever see — the plan is
   // complete without this.
   if (!key) return json({ error: 'unconfigured' }, 503)
 
-  let body: Body
-  try {
-    body = (await request.json()) as Body
-  } catch {
-    return json({ error: 'bad json' }, 400)
-  }
-
-  const paper = typeof body.paper === 'string' ? paperBySlug(body.paper) : undefined
+  const url = new URL(request.url)
+  const paper = paperBySlug(url.searchParams.get('p') ?? '')
   if (!paper) return json({ error: 'unknown paper' }, 400)
 
-  const prep = PREPS.find((p) => p === body.prep)
+  const prep = PREPS.find((x) => x === url.searchParams.get('prep'))
   if (!prep) return json({ error: 'unknown prep' }, 400)
 
-  if (!Array.isArray(body.blocks) || body.blocks.length === 0 || body.blocks.length > 12) {
-    return json({ error: 'bad blocks' }, 400)
+  // `u` is `unit:size` pairs — `4:l,10:m`. Sizes are letters rather than minutes
+  // so that the set of possible URLs stays small enough to actually cache.
+  const pairs = (url.searchParams.get('u') ?? '').split(',').filter(Boolean)
+  if (!pairs.length || pairs.length > 12) return json({ error: 'bad blocks' }, 400)
+
+  const blocks: { unit: (typeof paper.units)[number]; size: SizeKey }[] = []
+  for (const pair of pairs) {
+    const [nStr, sizeStr] = pair.split(':')
+    const unit = paper.units.find((u) => String(u.n) === nStr)
+    const size = (Object.keys(SIZES) as SizeKey[]).find((k) => k === sizeStr)
+    if (!unit || !size) return json({ error: 'bad block' }, 400)
+    if (!blocks.some((x) => x.unit.n === unit.n)) blocks.push({ unit, size })
   }
 
-  // Every block must name a real unit of that real paper. This is the check that
-  // makes the endpoint useless to anyone who is not the site.
-  const blocks: { unit: (typeof paper.units)[number]; minutes: number }[] = []
-  for (const raw of body.blocks as unknown[]) {
-    const b = raw as { n?: unknown; minutes?: unknown }
-    const unit = paper.units.find((u) => u.n === b.n)
-    const minutes = typeof b.minutes === 'number' ? Math.round(b.minutes) : NaN
-    if (!unit || !Number.isFinite(minutes) || minutes < 5 || minutes > 24 * 60) {
-      return json({ error: 'bad block' }, 400)
-    }
-    if (!blocks.some((x) => x.unit.n === unit.n)) blocks.push({ unit, minutes })
-  }
+  // Only past validation, so a flood of malformed requests costs nothing and a
+  // flood of valid ones is what actually gets limited.
+  const ip =
+    request.headers.get('x-vercel-forwarded-for') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'unknown'
+  if (overLimit(ip, Date.now())) return json({ error: 'slow down' }, 429)
 
   // Built here, from our data — never from anything the caller wrote.
   const userText = [
@@ -186,11 +225,10 @@ export async function POST(request: Request): Promise<Response> {
     `The student ${PREP_WORDS[prep]}.`,
     '',
     'Blocks the site has already scheduled, in order:',
-    ...blocks.map(({ unit, minutes }, i) => {
-      const share = minutes / (unit.marks * 12)
-      const size = share < 0.35 ? 'a short block' : share < 0.8 ? 'a moderate block' : 'a long block'
-      return `${i + 1}. unit n=${unit.n} — "${unit.name}" (${size} relative to how much is in it).\n   What this unit covers: ${unit.asked}`
-    }),
+    ...blocks.map(
+      ({ unit, size }, i) =>
+        `${i + 1}. unit n=${unit.n} — "${unit.name}" (${SIZES[size]} relative to how much is in it).\n   What this unit covers: ${unit.asked}`,
+    ),
     '',
     'Write the opening, the steps for each unit n above, and the last-stretch list.',
   ].join('\n')

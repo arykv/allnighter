@@ -258,13 +258,15 @@ opening paragraph and a last-stretch list.
 | Contract | The model **writes; it never computes.** The prompt forbids it from stating any number at all, and every figure on the page is rendered from the deterministic plan |
 | Abuse | The endpoint takes a paper slug, a prep level, and unit numbers — all validated against `papers.ts`. **There is no free-text field**, so it cannot be used as a general-purpose Gemini relay. That is the defence; there is no auth to add on a site with no accounts |
 | Failure | Every path is silent. `useAiPlan` resolves to `off`, and the plan renders exactly as it would with the AI disabled. It must stay that way |
-| Caching | 200s carry `s-maxage=86400` — two students revising the same units the same night should not cost two calls |
+| Caching | **It is a `GET`, and that is load-bearing.** It started as a `POST` carrying `s-maxage=86400`, which did nothing whatsoever — CDNs do not cache POST, so every plan ever generated was a paid call. As a cacheable GET the same request costs one call a day globally |
+| Cardinality | Block length goes in the query as one letter (`s`/`m`/`l`), never as minutes. The prompt only ever needed "short/moderate/long", and minutes would have made nearly every URL unique, defeating the cache. `src/lib/aiPlan.ts` does the bucketing |
+| Rate limit | Per-IP, 15 a minute, in module scope — checked *after* validation, so malformed floods cost nothing. Not a global quota (that needs the database this project doesn't have); it exists to stop one caller in a loop turning a warm instance into a billing incident |
 
 `vercel.json`'s SPA catch-all is scoped `/((?!api/).*)` so it cannot swallow the
 function.
 
-**The handler must be a named `export async function POST`, never a default
-export.** Vercel's Node runtime reads `export default` as the old
+**The handler must be a named method export (`export async function GET`),
+never a default export.** Vercel's Node runtime reads `export default` as the old
 `(req, res) => void` signature and *ignores the value it returns*. A
 web-standard `(Request) => Response` handler exported as default does not throw
 — it runs, builds a correct Response, returns it into the void, and the request
