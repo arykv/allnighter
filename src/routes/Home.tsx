@@ -249,7 +249,7 @@ function WhyBother() {
     {
       to: '/tonight',
       title: 'It decides, instead of giving you more to read',
-      body: 'At 11pm you don’t need another PDF. You need someone to say what to open first, what to skip, and when to stop. Four taps and you get exactly that, in order, with the time each thing gets.',
+      body: 'At 11pm you don’t need another PDF. You need someone to say what to open first, what to skip, and when to stop. Four taps gets you exactly that, in order, with the time each block gets — and AI fills in what to physically do inside each one, down to the equation to write from memory.',
       link: 'Try it',
     },
     {
@@ -272,8 +272,8 @@ function WhyBother() {
     },
     {
       to: '/about',
-      title: 'No account, no ads, no app, no paywall — permanently',
-      body: 'Nothing here is gated and nothing ever will be. The plan is worked out on your phone rather than on a server, so nothing you tap even leaves it. There isn’t a business model to protect.',
+      title: 'Nothing here is locked, and you never make an account',
+      body: 'No sign-up, no app, no “unlock the full plan”. Every chapter, every guide, all 183 pages of my answer scripts and the whole planner are open to anyone who lands on the page — including the parts I could obviously have charged for.',
       link: 'How this is built',
     },
   ]
@@ -421,8 +421,8 @@ function Hero({ onOpenSearch }: { onOpenSearch: () => void }) {
           >
             This isn't where you study all year. It's where you go when you didn't. Four taps and
             you get an honest read on where you stand — including what you're realistically going to
-            score, which is not full marks — and a plan for the hours you actually have rather than
-            the hours on the clock.
+            score, which is not full marks — a plan for the hours you actually have rather than the
+            hours on the clock, and AI that writes out what to actually do in each block.
           </motion.p>
 
           {/* The one button the whole site is named after. */}
@@ -474,7 +474,7 @@ function Hero({ onOpenSearch }: { onOpenSearch: () => void }) {
               >
                 <Stat value={String(NCERT_CHAPTER_COUNT)} label="chapters" />
                 <Stat value={String(subjectCount)} label="subjects" />
-                <Stat value="₹0" label="forever" />
+                <Stat value="183" label="script pages" />
               </motion.dl>
             </div>
 

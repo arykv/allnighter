@@ -11,8 +11,8 @@ const FAQ = [
     a: 'Students. It started as a folder of scanned notes shared in a class group and turned into a site because nobody could ever find the right link twice. It isn’t run by the school and it isn’t official.',
   },
   {
-    q: 'Is it free? Will it stay free?',
-    a: 'Yes and yes. There are no ads, no accounts and nothing to sign up for. It’s a handful of static files on GitHub Pages, which costs nothing to host.',
+    q: 'Is it free? What’s the catch?',
+    a: 'Everything on the site is free to read and there is nothing to sign up for — no account, no app, no section that asks you to pay to see the rest. It is paid for by ads on some pages, and by nothing else: nothing here is sponsored, no company has asked for a mention, and no link on this site earns a commission. If that ever changes it will say so on the page it changes on.',
   },
   {
     q: 'Whose notes are these?',

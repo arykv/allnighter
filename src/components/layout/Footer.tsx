@@ -36,6 +36,7 @@ const COLUMNS = [
       { label: 'A real answer script', to: '/paper/script/computer-science' },
       { label: 'About', to: '/about' },
       { label: 'Add your notes', to: '/about#contribute' },
+      { label: 'Privacy & ads', to: '/privacy' },
     ],
   },
 ]
@@ -54,7 +55,7 @@ export function Footer() {
             </div>
             <p className="text-muted mt-4 max-w-xs text-sm leading-relaxed">
               Not where you study all year. Where you go when you didn&rsquo;t. Written by one CBSE
-              student who did it twice — free, no sign-up, and it stays that way.
+              student who did it twice, with the marksheets and the answer scripts to show for it.
             </p>
             <div className="mt-5 flex gap-2">
               <a

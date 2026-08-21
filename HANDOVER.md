@@ -19,7 +19,7 @@ the build that took the site from 10 routes to 30.
 | Hosting | Vercel, project `allnighter` under `arykvs-projects`, auto-deploys from `main` |
 | Old domain | `dps-gandhinagar.in` — GitHub Pages, orphan `legacy-domain` branch, one `noindex` page. See §7 |
 | Build | `tsc --noEmit && vite build && vite build --ssr … && node scripts/prerender.mjs` |
-| Output | 30 prerendered routes, ~11 MB (5.5 MB of that is answer-script images) |
+| Output | 31 prerendered routes, ~11 MB (5.5 MB of that is answer-script images) |
 
 **Deploy = push to `main`.** He checks the live site, so deploy after each
 meaningful change.
@@ -159,9 +159,9 @@ too dark to feel like a highlighter.
 ### Accessibility
 
 `SectionHead` takes `level={1}` when it *is* the page title. Until this existed
-**24 of the 30 routes shipped with no `<h1>` anywhere in them**, because on
+**24 of the then-30 routes shipped with no `<h1>` anywhere in them**, because on
 almost every page the first `SectionHead` is the page title — and it looks
-identical either way, which is why nobody noticed. All 30 routes now have exactly
+identical either way, which is why nobody noticed. All 31 routes now have exactly
 one `h1`, no skipped heading levels, no unlabelled controls, no duplicate ids.
 
 `MotionConfig reducedMotion="user"` sits at the root of `App.tsx`. The
@@ -180,10 +180,15 @@ after any structural change — it takes seconds and it caught 25 real issues.
 - **No uploads, no database.** He killed a scoped Supabase flow. Contributions
   come by email to `dpsgnotes@gmail.com`. *(This is what blocks deadline-alert
   emails — see §8.)*
-- **No AI chatbot, no AI evaluator.** Reasoning in `VISION.md` §5.
+- **No AI chatbot, no AI evaluator.** Still true. What exists is a *writer*
+  inside `/tonight` that never computes and is never load-bearing — the rules it
+  has to keep are in `VISION.md` §5, and they are not style preferences.
 - **Links, not re-hosting**, for NCERT and outside material.
-- **Nothing gets paywalled.** Money only ever comes from printed objects.
-- **No affiliate links, ever.** `/books` says so on the page.
+- **Nothing gets paywalled.** Ads pay for the site; a reader never does. This is
+  the line that must not move.
+- **No affiliate links, no sponsorship, no paid mentions, ever.** `/books` says
+  so on the page. An ad slot is a rented rectangle everyone recognises; a bought
+  recommendation is a lie about a book. Only the first is allowed.
 
 ---
 
@@ -239,6 +244,34 @@ paper. Keep that distinction.
 - `/guide` + `/guide/class-12-{physics,chemistry,maths,english,computer-science}`
 - `/books` — three books worth buying, and Maths where you should buy nothing
 
+**The AI layer — `api/plan.ts` + `src/lib/aiPlan.ts`**
+
+The only place this site talks to a model. `/tonight` schedules *which* units and
+*for how long*; this writes what to physically do inside each block, plus an
+opening paragraph and a last-stretch list.
+
+| | |
+|---|---|
+| Key | `GEMINI_API_KEY`, set on the `allnighter` Vercel project in all three environments. Server-side only — never `VITE_`-prefixed, or it ships to the browser |
+| Models | `gemini-flash-latest`, falling back to `gemini-flash-lite-latest` on 429/503. Aliases, never pinned versions — Google retires those. The fallback is not paranoia: the free tier 503'd on the very first live call |
+| Contract | The model **writes; it never computes.** The prompt forbids it from stating any number at all, and every figure on the page is rendered from the deterministic plan |
+| Abuse | The endpoint takes a paper slug, a prep level, and unit numbers — all validated against `papers.ts`. **There is no free-text field**, so it cannot be used as a general-purpose Gemini relay. That is the defence; there is no auth to add on a site with no accounts |
+| Failure | Every path is silent. `useAiPlan` resolves to `off`, and the plan renders exactly as it would with the AI disabled. It must stay that way |
+| Caching | 200s carry `s-maxage=86400` — two students revising the same units the same night should not cost two calls |
+
+`vercel.json`'s SPA catch-all is scoped `/((?!api/).*)` so it cannot swallow the
+function.
+
+**Analytics and ads**
+
+- `@vercel/analytics/react` — note `/react`, **not** `/next`. Vercel's setup page
+  hands you the Next.js import by default and this is a Vite SPA, where that
+  entry point does not exist.
+- `/privacy` documents everything that leaves the device. It is also a hard
+  AdSense prerequisite — Google rejects sites with no such page.
+- **AdSense is blocked on age**, not on code: the account holder must be 18 and
+  Aryan is 17 until April 2027. See VISION §12.
+
 **Off-screen**
 - `/print` + `/print/{physics-formulae,maths-formulae,organic-conversions,for-parents}`
 
@@ -255,7 +288,7 @@ src/
   data/     results · guides · papers · script · paper · print · books
             resources · subjects · ncert(.json) · links · channels
             schedule · strategy · tools · legacy-routes · types
-  lib/      allnighter (the plan) · search (Fuse) · marks · seo
+  lib/      allnighter (the plan) · aiPlan (the writer) · search (Fuse) · marks · seo
             hooks · motion · theme · schedule-store · format · cn
   components/  Marksheet · PeriodBar · ResourceCard · CommandPalette
                RouteErrorBoundary · layout/ · ui/
@@ -263,6 +296,8 @@ src/
             Books · Library · Viewer · Chapters · Resources · Tools
             SchoolDay · Strategy · About · NotFound
   entry-server.tsx
+api/
+  plan.ts           the only call to Gemini — see §4
 scripts/
   prerender.mjs     renders routes → HTML, sitemap, JSON-LD, OG cards
   og.mjs            per-page Open Graph card generation

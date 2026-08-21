@@ -5,7 +5,8 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "_comment": "Everything except /api/* falls through to the SPA. Vercel does check the filesystem (and functions) before rewrites, so /api would resolve anyway — but a catch-all that visibly swallows the API is the kind of thing that gets debugged for an hour after someone reorders this file.",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],

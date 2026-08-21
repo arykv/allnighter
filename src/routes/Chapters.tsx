@@ -21,7 +21,7 @@ const STREAMS: (Stream | 'all')[] = ['all', 'science', 'commerce', 'arts']
  *
  * The books are free and the board sets papers from them, but finding one
  * chapter normally means three clicks through a government site or an ad-farm
- * mirror. This is the same files, one click, no ads.
+ * mirror. This is the same files, one click, no interstitials.
  */
 export default function Chapters() {
   const [params, setParams] = useSearchParams()
@@ -74,7 +74,7 @@ export default function Chapters() {
         level={1}
         eyebrow="NCERT · chapterwise"
         title={`Class ${grade} NCERT chapters, one click each`}
-        description="The actual NCERT PDFs, straight from ncert.nic.in — no ad walls, no sign-up, no “download” button that opens three tabs. Papers are set from these books."
+        description="The actual NCERT PDFs, straight from ncert.nic.in — no interstitials, no sign-up, no “download” button that opens three tabs. Papers are set from these books."
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-2">

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, BedDouble, Info, RotateCcw, Sunrise } from 'lucide-react'
+import { ArrowRight, BedDouble, Info, RotateCcw, Sparkles, Sunrise } from 'lucide-react'
 import { GRADES, papersFor, type Grade } from '@/data/papers'
 import {
   PREP_OPTIONS,
@@ -12,6 +12,7 @@ import {
   type Prep,
   type Session,
 } from '@/lib/allnighter'
+import { stepsFor, useAiPlan, type AiState } from '@/lib/aiPlan'
 import { ButtonLink } from '@/components/ui/Button'
 import { useLocalStorage } from '@/lib/hooks'
 import { rise, stagger } from '@/lib/motion'
@@ -61,6 +62,10 @@ export default function AllNighter() {
     [subject, when, prep, startedAt],
   )
 
+  // Written by a model from the plan above, and never load-bearing — see
+  // lib/aiPlan.ts. If it fails the page simply doesn't mention it.
+  const ai = useAiPlan(plan)
+
   // Send the screen reader (and the keyboard) to the answer, not back to the top.
   useEffect(() => {
     if (plan) verdictRef.current?.focus()
@@ -94,7 +99,12 @@ export default function AllNighter() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Result plan={plan} verdictRef={verdictRef} onReset={() => setStartedAt(null)} />
+            <Result
+              plan={plan}
+              ai={ai}
+              verdictRef={verdictRef}
+              onReset={() => setStartedAt(null)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -247,9 +257,10 @@ function Ask(p: {
       {!p.ready && <p className="text-faint mt-3 text-xs">Pick all four and the plan appears.</p>}
 
       <p className="text-faint mt-8 max-w-xl text-xs leading-relaxed">
-        Nothing you tap here leaves your phone. There's no account, no sign-in and no server — the
-        plan is worked out in your browser and only your last answers are remembered, so the page is
-        already filled in next time.
+        No account, no sign-in, nothing to install. Your answers are worked out in your browser and
+        remembered only on this device, so the page is already filled in next time. The one thing
+        that leaves is the subject and the unit list, sent so the plan can be written for you — never
+        anything that identifies you.
       </p>
     </>
   )
@@ -284,10 +295,12 @@ function Chip({
 
 function Result({
   plan,
+  ai,
   verdictRef,
   onReset,
 }: {
   plan: Plan
+  ai: AiState
   verdictRef: React.RefObject<HTMLHeadingElement | null>
   onReset: () => void
 }) {
@@ -319,6 +332,8 @@ function Result({
         {verdict.objective}
       </p>
 
+      <AiOpening ai={ai} />
+
       <Numbers plan={plan} />
 
       <Expectations plan={plan} />
@@ -336,7 +351,7 @@ function Result({
 
           <div className="mt-6 space-y-8">
             {study.map((s) => (
-              <SessionCard key={s.id} plan={plan} session={s} />
+              <SessionCard key={s.id} plan={plan} session={s} ai={ai} />
             ))}
           </div>
 
@@ -352,6 +367,8 @@ function Result({
       {morning && !plan.morningIsStudy && <MorningCard plan={plan} session={morning} />}
 
       <Dropped plan={plan} />
+
+      <AiBeforeYouGoIn ai={ai} />
 
       <div className="mt-12 flex flex-wrap gap-2.5">
         {paper.guideSlug && (
@@ -374,6 +391,90 @@ function Result({
           Change something
         </button>
       </div>
+    </section>
+  )
+}
+
+/**
+ * The AI label.
+ *
+ * Said plainly rather than sold. A student is entitled to know which sentences
+ * on this page came out of a model and which came out of a spreadsheet, and on
+ * a site whose whole argument is "the numbers here are checkable" that line has
+ * to be visible — the numbers are never the model's, and this is what says so.
+ */
+function AiTag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-mark inline-flex items-center gap-1.5 font-mono text-[10px] font-medium tracking-[0.12em] uppercase">
+      <Sparkles className="size-3" aria-hidden />
+      {children}
+    </span>
+  )
+}
+
+function AiOpening({ ai }: { ai: AiState }) {
+  if (ai.status === 'loading') {
+    return (
+      <p className="text-faint mt-5 flex items-center gap-2 text-[13px]">
+        <Sparkles className="size-3.5 animate-pulse" aria-hidden />
+        Working out what to actually do in each block…
+      </p>
+    )
+  }
+  if (ai.status !== 'ready' || !ai.data.opening) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="surface border-line mt-5 rounded-[6px] border p-4"
+    >
+      <AiTag>Written for your plan</AiTag>
+      <p className="mt-2 text-[15px] leading-relaxed">{ai.data.opening}</p>
+      <p className="text-faint mt-2.5 text-[12px] leading-relaxed">
+        This part is written by AI from the plan below. Every number on this page — the hours, the
+        marks, the pass mark — is worked out by the site, not by the model, which is never asked to
+        do arithmetic.
+      </p>
+    </motion.div>
+  )
+}
+
+function AiSteps({ steps }: { steps: string[] | null }) {
+  if (!steps?.length) return null
+
+  return (
+    <div className="border-[var(--mark)]/40 mt-2.5 border-l-2 pl-3">
+      <AiTag>In this block</AiTag>
+      <ol className="mt-1.5 space-y-1">
+        {steps.map((t, i) => (
+          <li key={t.slice(0, 24)} className="text-muted flex gap-2 text-[13px] leading-relaxed">
+            <span className="text-faint shrink-0 font-mono text-[11px] tabular">{i + 1}.</span>
+            {t}
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+function AiBeforeYouGoIn({ ai }: { ai: AiState }) {
+  if (ai.status !== 'ready' || !ai.data.beforeYouGoIn.length) return null
+
+  return (
+    <section className="mt-12" aria-labelledby="an-lastly">
+      <h2 id="an-lastly" className="text-lg">
+        The last stretch, before you walk in
+      </h2>
+      <ul className="mt-3 space-y-2">
+        {ai.data.beforeYouGoIn.map((t) => (
+          <li key={t.slice(0, 24)} className="text-muted flex gap-2.5 text-[14px] leading-relaxed">
+            <span className="text-mark mt-2 size-1 shrink-0 rounded-full bg-current" aria-hidden />
+            {t}
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
@@ -471,7 +572,7 @@ function Expectations({ plan }: { plan: Plan }) {
   )
 }
 
-function SessionCard({ plan, session }: { plan: Plan; session: Session }) {
+function SessionCard({ plan, session, ai }: { plan: Plan; session: Session; ai: AiState }) {
   const blocks = blocksIn(plan, session.id)
 
   return (
@@ -529,6 +630,9 @@ function SessionCard({ plan, session }: { plan: Plan; session: Session }) {
                   </span>{' '}
                   <span className="text-muted">{b.depth.detail}</span>
                 </p>
+
+                {/* A unit split across two sittings shows its steps once. */}
+                {!b.continued && <AiSteps steps={stepsFor(ai, b.unit.n)} />}
 
                 {b.partial && (
                   <p className="text-pen mt-2 text-[13px] leading-relaxed">

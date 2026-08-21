@@ -149,8 +149,9 @@ answers, each one something the alternatives **structurally cannot say**:
 2. **It tells you what you'll actually score.** Not "you can still get 90".
 3. **Every number comes from CBSE**, and the build fails if it stops adding up.
 4. **I show you my own papers, including the bad one.** 183 pages.
-5. **No account, no ads, no app, no paywall** — there is no business model to
-   protect, which is exactly why the other four are possible.
+5. **Nothing is locked, and you never make an account** — no sign-up, no app, no
+   "unlock the full plan", including for the parts that could obviously have
+   been charged for.
 
 A subscription business cannot say (1) or (5) and survive, and nobody else has
 (4) at all. That is the whole argument, and it now takes ten seconds to read
@@ -245,6 +246,37 @@ we'd ship. It saves zero time versus what they have, it costs money per query on
 a project with ₹0 revenue, and one confidently wrong answer burns the only asset
 we own. Our advantage is curation, honesty and knowing what a student actually
 needs — not intelligence.
+
+> **Narrowed, 30 Jul 2026 — Aryan's call.** The two sentences above still stand:
+> there is no chatbot and no evaluator, and there should never be one. What was
+> added is much smaller and sits inside a surface we already own.
+>
+> `/tonight` decides *which* units and *for how long*. It could never say what to
+> physically do in a ninety-minute block on Electrochemistry, and that is the
+> gap a student actually feels. `api/plan.ts` fills it: given the paper, the
+> preparation level and the scheduled units, a model writes the steps.
+>
+> Three rules make this consistent with the paragraph above rather than a
+> reversal of it, and none of them is optional:
+>
+> 1. **The model writes; it never computes.** Every number a student sees — the
+>    hours, the marks, the expected range, the pass mark — is rendered from the
+>    deterministic plan. The prompt forbids the model from stating any number at
+>    all. A wrong figure on this site must always be findable in a TypeScript
+>    file.
+> 2. **It is additive, never load-bearing.** Every failure path is silent. The
+>    plan is complete and useful with the AI switched off, and a student at 1am
+>    is never told that a service they did not ask for is unavailable.
+> 3. **It is labelled.** The page says which paragraphs a model wrote, next to
+>    the note that the numbers are not its work. On a site whose argument is
+>    "these claims are checkable", hiding that would cost more than the feature
+>    is worth.
+>
+> This is also why it is not a chatbot: the endpoint accepts a paper slug, a
+> prep level and unit numbers, all validated against `papers.ts`. There is no
+> free-text field, so it cannot be used as a general-purpose model relay — which
+> is the security property *and* the reason it stays a study tool rather than
+> drifting into being a worse ChatGPT.
 
 **No parent section.** A tab written for parents collides with a voice built on
 *"I've been through this."* Instead: **one printable page, no tab.** The student
@@ -447,10 +479,46 @@ and does the voice survive the handover?
 
 ## 12. Revenue
 
-₹0 for now, deliberately. He is 17 until April 2027, which blocks every Indian
-payment gateway (18+ with PAN). That constraint is doing the strategy a favour —
-build assets, not income.
+**Changed 30 Jul 2026 — Aryan's call, and it reverses the "₹0 for now" stance.**
+The site is to carry **ads**, and the "free forever / no ads / no business
+model" language is to come out of the copy. That language was doing real work in
+the pitch, so removing it is not cosmetic and is recorded here rather than
+quietly done.
 
-When money does arrive it comes from **convenience and physical objects**: printed
-revision kits, flashcards, wall charts, planners, offline packs. Never from
-information. Students pay for convenience; parents pay for quality.
+What was true before and is still true:
+
+- **Nothing is paywalled.** Not the planner, not the guides, not the 183 pages of
+  answer scripts. Ads pay for the site; a reader never does. This is the line
+  that must not move — the moment a student hits "unlock", the positioning in §1
+  is dead.
+- **No affiliate links, no sponsorship, no paid mentions.** `/books` still says
+  so on the page. An ad slot is a rented rectangle that everybody recognises as
+  an advert; a recommendation that has been bought is a lie about a book. Those
+  are not the same thing and the second one is still banned.
+- **Physical objects remain the better long-term line**: printed revision kits,
+  flashcards, wall charts, planners. Ads are what the site can earn *now*.
+
+What this cost, and it is worth being honest about it: *"no ads"* was reason 5
+of the five on the front door, and one of only two that a coaching company
+structurally cannot copy. Reason 5 is now "nothing is locked", which is weaker
+but still true and still unusual.
+
+### The blocker, which is the same one as always
+
+**Google AdSense requires the account holder to be 18.** Aryan is 17 until
+April 2027 — the identical constraint that blocks every Indian payment gateway.
+An account in his own name will be rejected, and an account that misstates age
+risks the payouts being withheld later, which is a worse outcome than waiting.
+
+The legitimate route is a **parent or guardian's AdSense account**, with their
+PAN and bank details, and the site declared under it. That is a conversation with
+his parents, not a task in this repo.
+
+What is done on the site's side, and was needed regardless: the "no ads" claims
+are gone, and `/privacy` exists and discloses third-party advertising cookies —
+Google will not approve a site without that page.
+
+## 12b. What the model is allowed to touch
+
+See §5. The short version: it writes prose inside `/tonight` and it is never
+asked to compute, never load-bearing, and always labelled.

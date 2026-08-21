@@ -1,6 +1,9 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, MotionConfig, motion, useScroll, useSpring } from 'motion/react'
+// `/react`, not `/next` — Vercel's setup page hands you the Next.js import by
+// default and this is a Vite SPA, where that entry point does not exist.
+import { Analytics } from '@vercel/analytics/react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CommandPalette } from '@/components/CommandPalette'
@@ -29,6 +32,7 @@ const Books = lazy(() => import('@/routes/Books'))
 const AllNighter = lazy(() => import('@/routes/AllNighter'))
 const Print = lazy(() => import('@/routes/Print'))
 const About = lazy(() => import('@/routes/About'))
+const Privacy = lazy(() => import('@/routes/Privacy'))
 const NotFound = lazy(() => import('@/routes/NotFound'))
 
 export default function App() {
@@ -100,6 +104,7 @@ export default function App() {
                       <Route path="/print/:slug" element={<Print />} />
                       <Route path="/links" element={<Navigate to="/resources" replace />} />
                       <Route path="/about" element={<About />} />
+                    <Route path="/privacy" element={<Privacy />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </motion.div>
@@ -111,6 +116,11 @@ export default function App() {
           <Footer />
           <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
           <ScrollReset />
+          {/* Page views only, and cookieless. Worth being precise about on a
+              site that tells people what it does with their data: this counts
+              which pages get opened. It never sees the answers you give
+              /tonight — those are worked out in the browser and stay there. */}
+          <Analytics />
         </TooltipProvider>
       </ThemeProvider>
     </MotionConfig>

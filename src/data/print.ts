@@ -313,7 +313,7 @@ const FOR_PARENTS: Printable = {
     },
   ],
   footnote:
-    'Written by Aryan Rao, Class of 2026, who scored 95.2% and 92.8% studying mostly at the last minute. allnighter.in — free, no login, no ads.',
+    'Written by Aryan Rao, Class of 2026, who scored 95.2% and 92.8% studying mostly at the last minute. allnighter.in — no login, nothing locked.',
 }
 
 export const PRINTABLES: Printable[] = [

@@ -60,7 +60,7 @@ export const PAGES: PageMeta[] = [
     path: '/',
     title: 'All Nighter — where you go when you didn’t study all year',
     description:
-      'Tomorrow’s exam? Four taps and you get an honest plan for the hours you have left — Class 11 or 12, with the marks you can realistically expect rather than the ones you’d like. Plus all 395 NCERT chapters, five subject guides with official CBSE weightage, seven calculators, and five real evaluated answer scripts published in full. Free, no login, no ads.',
+      'Tomorrow’s exam? Four taps and you get an honest plan for the hours you have left — Class 11 or 12, with the marks you can realistically expect rather than the ones you’d like. Plus all 395 NCERT chapters, five subject guides with official CBSE weightage, seven calculators, and five real evaluated answer scripts published in full. No login, nothing locked.',
     intent: [
       'cbse study material class 10 11 12',
       'ncert chapters pdf free',
@@ -78,7 +78,7 @@ export const PAGES: PageMeta[] = [
     path: '/chapters/class-10',
     title: 'NCERT Class 10 chapters — every PDF, chapter by chapter',
     description:
-      'Every NCERT Class 10 chapter as a direct PDF: Science, Maths, Social Science (History, Geography, Civics, Economics), English First Flight and Footprints, and Hindi. No ads, no sign-up, straight from ncert.nic.in.',
+      'Every NCERT Class 10 chapter as a direct PDF: Science, Maths, Social Science (History, Geography, Civics, Economics), English First Flight and Footprints, and Hindi. No sign-up and no download manager — straight from ncert.nic.in.',
     intent: [
       'ncert class 10 pdf download chapter wise',
       'class 10 science ncert pdf',
@@ -95,7 +95,7 @@ export const PAGES: PageMeta[] = [
     path: '/chapters/class-11',
     title: 'NCERT Class 11 chapters — every PDF, chapter by chapter',
     description:
-      'Every NCERT Class 11 chapter as a direct PDF: Physics, Chemistry, Maths, Biology, Computer Science, Accountancy, Business Studies, Economics, History, Political Science, Psychology and English. No ads, no sign-up, straight from ncert.nic.in.',
+      'Every NCERT Class 11 chapter as a direct PDF: Physics, Chemistry, Maths, Biology, Computer Science, Accountancy, Business Studies, Economics, History, Political Science, Psychology and English. No sign-up and no download manager — straight from ncert.nic.in.',
     intent: [
       'ncert class 11 pdf download chapter wise',
       'class 11 physics ncert pdf',
@@ -112,7 +112,7 @@ export const PAGES: PageMeta[] = [
     path: '/chapters/class-12',
     title: 'NCERT Class 12 chapters — every PDF, chapter by chapter',
     description:
-      'Every NCERT Class 12 chapter as a direct PDF: Physics, Chemistry, Maths, Biology, Computer Science, Accountancy, Business Studies, Economics, History, Political Science, Psychology and English. No ads, no sign-up, straight from ncert.nic.in.',
+      'Every NCERT Class 12 chapter as a direct PDF: Physics, Chemistry, Maths, Biology, Computer Science, Accountancy, Business Studies, Economics, History, Political Science, Psychology and English. No sign-up and no download manager — straight from ncert.nic.in.',
     intent: [
       'ncert class 12 pdf download chapter wise',
       'class 12 physics ncert pdf',
@@ -270,6 +270,17 @@ export const PAGES: PageMeta[] = [
       headline: 'Let’s survive it. An honest plan for the hours you have left.',
       stat: '4',
       statLabel: 'taps, no typing',
+    },
+  },
+  {
+    path: '/privacy',
+    title: 'Privacy — what this site does with your data',
+    description:
+      'No account, no database, and nothing here knows who you are. What the planner keeps on your device, what leaves it (page views and the AI step), how the ads work and how to turn off personalised ones. Written plainly, including the unflattering parts.',
+    intent: ['allnighter privacy policy', 'what data does this site collect'],
+    og: {
+      kicker: 'Privacy',
+      headline: 'No account, no database, and nothing that knows who you are',
     },
   },
   {
