@@ -1,4 +1,8 @@
-import { PAPERS, paperBySlug } from '../src/data/papers'
+// Generated from src/data/papers.ts by scripts/build-api-papers.mjs.
+// Importing '../src/data/papers' directly typechecks, builds, and then dies in
+// production with ERR_MODULE_NOT_FOUND — Vercel transpiles this file but emits
+// nothing it imports from outside api/. See that script's header.
+import { PAPERS, paperBySlug } from './_papers.js'
 
 /*
  * The only place this site talks to a model.

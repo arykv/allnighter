@@ -6,7 +6,7 @@
   "description": "The student hub for DPS Gandhinagar — notes, papers, tools and everything else in one place.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
+    "build": "node scripts/build-api-papers.mjs && tsc --noEmit && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "build:client": "vite build"
