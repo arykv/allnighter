@@ -46,13 +46,20 @@ type Prep = (typeof PREPS)[number]
  * Aliases, not pinned versions — Google retires pinned models, which is how
  * `gemini-2.5-*` died the week this key was created.
  *
- * Two of them, tried in order, because the free tier returns a 503 "high demand"
- * often enough that a single attempt is not a working feature — it happened on
- * the very first live call from this file. The lite model draws on a separate
- * quota and is more than good enough for four imperative sentences about
- * Electrochemistry, so falling back to it beats showing the student nothing.
+ * **Lite first, and that is not a compromise.** Measured on this key: lite
+ * answers this prompt in about 1.1s, while `gemini-flash-latest` returned 503
+ * "high demand" on every attempt across two sessions. The good output this
+ * feature shipped with came from lite — flash never once succeeded. Asking the
+ * bigger model first bought nothing and cost the entire request budget, which
+ * is how the first production call died with FUNCTION_INVOCATION_TIMEOUT.
+ *
+ * The task is four imperative sentences about a chapter. It does not need the
+ * larger model, and flash stays only as a second chance if lite is rate-limited.
+ *
+ * Do NOT add `thinkingConfig: { thinkingBudget: 0 }` — lite rejects it outright
+ * with a 400, and it is not needed anyway at this latency.
  */
-const MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'] as const
+const MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'] as const
 
 const RESPONSE_SCHEMA = {
   type: 'object',
@@ -192,7 +199,7 @@ export default async function handler(request: Request): Promise<Response> {
   let res: Response | null = null
   for (const model of MODELS) {
     const abort = new AbortController()
-    const deadline = setTimeout(() => abort.abort(), 20_000)
+    const deadline = setTimeout(() => abort.abort(), 8_000)
     try {
       res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,

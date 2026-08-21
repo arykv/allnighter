@@ -253,7 +253,8 @@ opening paragraph and a last-stretch list.
 | | |
 |---|---|
 | Key | `GEMINI_API_KEY`, set on the `allnighter` Vercel project in all three environments. Server-side only — never `VITE_`-prefixed, or it ships to the browser |
-| Models | `gemini-flash-latest`, falling back to `gemini-flash-lite-latest` on 429/503. Aliases, never pinned versions — Google retires those. The fallback is not paranoia: the free tier 503'd on the very first live call |
+| Models | **`gemini-flash-lite-latest` first**, `gemini-flash-latest` second. Aliases, never pinned versions — Google retires those. Lite answers in ~1.1s measured; flash returned 503 "high demand" on every attempt across two sessions, and asking it first is what made the first production call die with `FUNCTION_INVOCATION_TIMEOUT`. Do not add `thinkingConfig.thinkingBudget: 0` — lite rejects it with a 400 |
+| Budget | 8s per attempt, two attempts, `maxDuration: 30` in `vercel.json`. Vercel's default is 10s, which is less than one slow Gemini call |
 | Contract | The model **writes; it never computes.** The prompt forbids it from stating any number at all, and every figure on the page is rendered from the deterministic plan |
 | Abuse | The endpoint takes a paper slug, a prep level, and unit numbers — all validated against `papers.ts`. **There is no free-text field**, so it cannot be used as a general-purpose Gemini relay. That is the defence; there is no auth to add on a site with no accounts |
 | Failure | Every path is silent. `useAiPlan` resolves to `off`, and the plan renders exactly as it would with the AI disabled. It must stay that way |
