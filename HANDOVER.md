@@ -262,6 +262,12 @@ opening paragraph and a last-stretch list.
 `vercel.json`'s SPA catch-all is scoped `/((?!api/).*)` so it cannot swallow the
 function.
 
+**`vercel.json` is schema-validated and rejects unknown keys.** A `"_comment"`
+added inside a rewrite object failed the whole deployment before the build
+command ever ran — the give-away is `Builds . [0ms]` in `vercel inspect`, and
+neither `vercel logs` nor `--logs` will tell you why. JSON has no comments;
+explanations for that file belong here instead.
+
 **Analytics and ads**
 
 - `@vercel/analytics/react` — note `/react`, **not** `/next`. Vercel's setup page
