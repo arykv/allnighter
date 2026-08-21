@@ -7,12 +7,12 @@
     <title>dps-gandhinagar.in — Aryan Rao, Class of 2026</title>
     <meta
       name="description"
-      content="This domain belongs to Aryan Rao, DPS Gandhinagar, Class of 2026. The notes site it used to hold now lives at allnighter.in."
+      content="This domain belongs to Aryan Rao, DPS Gandhinagar, Class of 2026."
     />
 
-    <!-- Crawlable but not indexable, on purpose. This page must never compete
-         with allnighter.in — and a robots.txt block would stop crawlers from
-         ever reading this line, which is the opposite of what we want. -->
+    <!-- Crawlable but not indexable, on purpose — a robots.txt block would stop
+         crawlers from ever reading this line, which is the opposite of what we
+         want for a domain whose old URLs are still in the index. -->
     <meta name="robots" content="noindex, follow" />
 
     <meta name="theme-color" content="#052e27" />
@@ -52,8 +52,7 @@
         margin: 0;
       }
 
-      /* Faint ruling on a 30px rhythm — the same register allnighter.in is
-         built on, so this reads as the same hand. */
+      /* Faint ruling on a 30px rhythm, like a school register. */
       body {
         min-height: 100vh;
         min-height: 100dvh;
@@ -125,53 +124,6 @@
         font-size: 0.9375rem;
       }
 
-      .card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-top: 2rem;
-        padding: 0.9375rem 1.125rem;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--surface);
-        color: inherit;
-        text-decoration: none;
-        transition:
-          border-color 0.15s ease,
-          transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
-      }
-
-      .card:hover,
-      .card:focus-visible {
-        border-color: var(--mark);
-        transform: translateY(-1px);
-      }
-
-      .card:focus-visible {
-        outline: 2px solid var(--mark);
-        outline-offset: 3px;
-      }
-
-      .card-title {
-        display: block;
-        font-weight: 600;
-        font-size: 0.9375rem;
-      }
-
-      .card-sub {
-        display: block;
-        margin-top: 0.125rem;
-        color: var(--muted);
-        font-size: 0.8125rem;
-      }
-
-      .card-arrow {
-        flex: none;
-        color: var(--mark);
-        font-size: 1.125rem;
-      }
-
       footer {
         margin-top: 2.25rem;
         color: var(--faint);
@@ -195,21 +147,6 @@
       <p class="owner">
         This domain is owned by <strong>Aryan Rao</strong>, DPS Gandhinagar, Class of 2026.
       </p>
-
-      <p class="note">
-        It used to hold a notes site for my school. That turned into something bigger and rather
-        more useful, so it moved.
-      </p>
-
-      <a class="card" href="https://allnighter.in">
-        <span>
-          <span class="card-title">All Nighter</span>
-          <span class="card-sub"
-            >Free CBSE notes, chapters and calculators for Class 10, 11 and 12</span
-          >
-        </span>
-        <span class="card-arrow" aria-hidden="true">&rarr;</span>
-      </a>
 
       <footer>Nothing else here. Go study. &mdash; Aryan</footer>
     </main>
