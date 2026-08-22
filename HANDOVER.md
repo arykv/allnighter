@@ -298,8 +298,18 @@ explanations for that file belong here instead.
   entry point does not exist.
 - `/privacy` documents everything that leaves the device. It is also a hard
   AdSense prerequisite — Google rejects sites with no such page.
-- **AdSense is blocked on age**, not on code: the account holder must be 18 and
-  Aryan is 17 until April 2027. See VISION §12.
+**AdSense — wired 22 Aug 2026**
+
+| | |
+|---|---|
+| Publisher ID | `ca-pub-6441824419970565` (public by design — it goes out in every ad request) |
+| Verification | Both paths, on purpose: the `adsbygoogle.js` script *and* the `google-adsense-account` meta tag, in `index.html`'s `<head>`. If an ad blocker stops the script during review, the tag still proves ownership |
+| Propagation | `scripts/prerender.mjs` uses `dist/index.html` as the template for every route, so anything in that head lands on all 31 automatically. Verified: 31/31 carry the client id |
+| `ads.txt` | `public/ads.txt`, one `DIRECT` record. Google warns about and can restrict monetisation on sites without it |
+| Status | Site added, **"Requires review"**. Aryan ticks the box and presses Verify in the AdSense console; the code is already live |
+
+`robots.txt` has no `Disallow` rules, so `Mediapartners-Google` can crawl — worth
+re-checking if that file ever grows rules.
 
 **Off-screen**
 - `/print` + `/print/{physics-formulae,maths-formulae,organic-conversions,for-parents}`

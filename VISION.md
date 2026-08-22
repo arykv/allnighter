@@ -503,20 +503,23 @@ of the five on the front door, and one of only two that a coaching company
 structurally cannot copy. Reason 5 is now "nothing is locked", which is weaker
 but still true and still unusual.
 
-### The blocker, which is the same one as always
+### The age question — raised, and settled by Aryan
 
-**Google AdSense requires the account holder to be 18.** Aryan is 17 until
-April 2027 — the identical constraint that blocks every Indian payment gateway.
-An account in his own name will be rejected, and an account that misstates age
-risks the payouts being withheld later, which is a worse outcome than waiting.
+AdSense requires the account holder to be 18, and Aryan is 17 until April 2027 —
+the same constraint that blocks every Indian payment gateway. That was flagged
+before any of this was built. **An account now exists and the site is added under
+it, so the question is closed; don't reopen it.** How the account is held is his
+business and his parents', not something this repo needs to know or record.
 
-The legitimate route is a **parent or guardian's AdSense account**, with their
-PAN and bank details, and the site declared under it. That is a conversation with
-his parents, not a task in this repo.
+What is done on the site's side: the "no ads" claims are gone, `/privacy`
+discloses third-party advertising cookies (Google will not approve a site
+without that page), and the AdSense snippet, meta tag and `ads.txt` are live on
+all 31 routes. See HANDOVER §4 for the IDs and the verification detail.
 
-What is done on the site's side, and was needed regardless: the "no ads" claims
-are gone, and `/privacy` exists and discloses third-party advertising cookies —
-Google will not approve a site without that page.
+**Not yet decided: where ads actually go.** Auto ads let Google place them
+wherever it likes, and `/tonight` at 1am is the one screen on this site whose
+value is that nothing else is on it. Excluding that page in the AdSense console
+is worth doing deliberately rather than discovering after the fact.
 
 ## 12b. What the model is allowed to touch
 
